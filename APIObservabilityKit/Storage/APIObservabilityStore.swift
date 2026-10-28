@@ -27,18 +27,26 @@ final class APIObservabilityStore {
 
         queue.async { [weak self] in
 
-            self?.logs.append(log)
+            guard let self else {
+                return
+            }
+
+            self.logs.append(log)
 
             print(
                 "APIObservability: stored log \(log.requestId)"
             )
+
+            APIObservability.shared.uploadPendingLogsIfBatchReady(
+                pendingLogCount: self.logs.count
+            )
         }
     }
 
-    func pendingLogs() -> [APIRequestLog] {
+    func pendingLogs(limit: Int) -> [APIRequestLog] {
 
         queue.sync {
-            logs
+            Array(logs.prefix(limit))
         }
     }
 

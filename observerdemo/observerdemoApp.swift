@@ -20,7 +20,8 @@ struct observerdemoApp: App {
                     logResponseHeaders: true,
                     logResponseBody: true,
                     maxBodySize: 10_000_000,
-                    interval: 2,
+                    interval: 10,
+                    batchSize: 5,
 //                    monitoringURL:
 //                        URL(
 //                            string:

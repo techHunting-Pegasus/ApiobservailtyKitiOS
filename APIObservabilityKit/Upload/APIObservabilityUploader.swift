@@ -27,19 +27,21 @@ final class APIObservabilityUploader {
     }()
     
     private var isUploading = false
+    private var uploadRequested = false
+    private var inFlightLogCount = 0
+    private var monitoringURL: URL?
     
     private let queue =
     DispatchQueue(
         label: "com.apiobservability.uploader"
     )
-    let configuration =
-    APIObservability.shared.configuration
     
     
     private init() {}
     
     func uploadPendingLogs(
-        monitoringURL: URL
+        monitoringURL: URL,
+        pendingLogCount: Int? = nil
     ) {
         
         queue.async { [weak self] in
@@ -48,25 +50,50 @@ final class APIObservabilityUploader {
                 return
             }
             
-            guard !self.isUploading else {
-                return
+            if let pendingLogCount {
+                let batchSize =
+                    APIObservability.shared.configuration?.batchSize ?? 20
+                let waitingLogCount =
+                    pendingLogCount - self.inFlightLogCount
+
+                guard waitingLogCount >= batchSize else {
+                    return
+                }
             }
-            
-            let logs =
-            APIObservabilityStore.shared
-                .pendingLogs()
-            
-            guard !logs.isEmpty else {
-                return
-            }
-            
-            self.isUploading = true
-            
-            self.upload(
-                logs: logs,
-                monitoringURL: monitoringURL
-            )
+
+            self.monitoringURL = monitoringURL
+            self.uploadRequested = true
+            self.startNextUploadIfNeeded()
         }
+    }
+
+    private func startNextUploadIfNeeded() {
+        guard
+            !isUploading,
+            uploadRequested,
+            let monitoringURL
+        else {
+            return
+        }
+
+        let batchSize =
+            APIObservability.shared.configuration?.batchSize ?? 20
+        let logs =
+            APIObservabilityStore.shared.pendingLogs(limit: batchSize)
+
+        guard !logs.isEmpty else {
+            uploadRequested = false
+            return
+        }
+
+        uploadRequested = false
+        isUploading = true
+        inFlightLogCount = logs.count
+
+        upload(
+            logs: logs,
+            monitoringURL: monitoringURL
+        )
     }
     
     private func upload(
@@ -134,7 +161,7 @@ final class APIObservabilityUploader {
                 "Content-Type"
         )
         request.setValue(
-            configuration?.apikey,
+            APIObservability.shared.configuration?.apikey,
             forHTTPHeaderField:
                 "X-API-Key"
         )
@@ -155,11 +182,7 @@ final class APIObservabilityUploader {
         session.dataTask(
             with: request
         ) { [weak self] data, response, error in
-            
-            defer {
-                self?.finishUpload()
-            }
-            
+
             // MARK: - Network Error
             
             guard error == nil else {
@@ -167,6 +190,7 @@ final class APIObservabilityUploader {
                     "APIObservability Upload Failed:",
                     error?.localizedDescription ?? "Unknown error"
                 )
+                self?.finishUpload()
                 return
             }
             
@@ -176,6 +200,7 @@ final class APIObservabilityUploader {
                 print(
                     "APIObservability Upload Failed: Invalid HTTP response"
                 )
+                self?.finishUpload()
                 return
             }
             
@@ -203,7 +228,7 @@ final class APIObservabilityUploader {
                     "APIObservability Upload Failed. Status Code:",
                     httpResponse.statusCode
                 )
-                
+                self?.finishUpload()
                 return
             }
             
@@ -219,16 +244,33 @@ final class APIObservabilityUploader {
                     logs.map(\.requestId)
                 )
             )
-            
+            self?.finishUpload(shouldDrain: true)
+
         }.resume()
         
         
     }
     
-    private func finishUpload() {
+    private func finishUpload(shouldDrain: Bool = false) {
         
         queue.async { [weak self] in
-            self?.isUploading = false
+            guard let self else {
+                return
+            }
+
+            self.isUploading = false
+            self.inFlightLogCount = 0
+
+            if shouldDrain {
+                let batchSize =
+                    APIObservability.shared.configuration?.batchSize ?? 20
+                let pendingLogs =
+                    APIObservabilityStore.shared.pendingLogs(limit: batchSize)
+                self.uploadRequested = self.uploadRequested
+                    || pendingLogs.count == batchSize
+            }
+
+            self.startNextUploadIfNeeded()
         }
     }
 }

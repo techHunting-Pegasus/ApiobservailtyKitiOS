@@ -22,6 +22,7 @@ public struct APIObservabilityConfiguration: Sendable {
     
     public let maxBodySize: Int
     public let interval: Double
+    public let batchSize: Int
     
 
     public let monitoringURL: URL?
@@ -49,6 +50,7 @@ public struct APIObservabilityConfiguration: Sendable {
         uploadLogs: Bool = true,
         maxBodySize: Int = 1_000_000,
         interval: Double = 10.0,
+        batchSize: Int = 20,
         monitoringURL: URL? = nil,
         apikey: String = "",
         ignoredHosts: Set<String> = [],
@@ -81,6 +83,7 @@ public struct APIObservabilityConfiguration: Sendable {
         self.logResponseBody = logResponseBody
         self.maxBodySize = maxBodySize
         self.interval = interval
+        self.batchSize = max(1, batchSize)
         self.monitoringURL = monitoringURL
         self.ignoredHosts = ignoredHosts
         self.sensitiveHeaders = sensitiveHeaders

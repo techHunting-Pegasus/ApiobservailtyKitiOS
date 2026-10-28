@@ -81,20 +81,34 @@ public final class APIObservability {
            uploadPendingLogs()
        }
     private func uploadPendingLogs() {
-        
-        let url :URL? = configuration?.monitoringURL ??  URL(string: "https://api-observability-backend.onrender.com/api/v1/monitoring/logs")
+        uploadPendingLogs(pendingLogCount: nil)
+    }
 
-            guard
-                let monitoringURL = url
-            else {
-                print("Moniterurl is not commung")
-                return
-            }
-
-            APIObservabilityUploader.shared.uploadPendingLogs(
-                monitoringURL: monitoringURL
-            )
+    func uploadPendingLogsIfBatchReady(pendingLogCount: Int) {
+        guard
+            let configuration,
+            pendingLogCount >= configuration.batchSize
+        else {
+            return
         }
+
+        uploadPendingLogs(pendingLogCount: pendingLogCount)
+    }
+
+    private func uploadPendingLogs(pendingLogCount: Int?) {
+        let url = configuration?.monitoringURL
+            ?? URL(string: "https://api-observability-backend.onrender.com/api/v1/monitoring/logs")
+
+        guard let monitoringURL = url else {
+            print("Monitoring URL is invalid")
+            return
+        }
+
+        APIObservabilityUploader.shared.uploadPendingLogs(
+            monitoringURL: monitoringURL,
+            pendingLogCount: pendingLogCount
+        )
+    }
 
 
     
