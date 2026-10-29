@@ -19,6 +19,10 @@ public struct APIObservabilityConfiguration: Sendable {
     
     // Monitoring upload
     public let uploadLogs: Bool
+    public let uploadRequestHeaders: Bool
+    public let uploadRequestBody: Bool
+    public let uploadResponseHeaders: Bool
+    public let uploadResponseBody: Bool
     
     public let maxBodySize: Int
     public let interval: Double
@@ -29,6 +33,9 @@ public struct APIObservabilityConfiguration: Sendable {
     public let apikey: String
 
     public let ignoredHosts: Set<String>
+
+    /// Exact host names to capture. An empty set captures all non-ignored hosts.
+    public let includedHosts: Set<String>
 
     public let sensitiveHeaders: Set<String>
 
@@ -75,20 +82,30 @@ public struct APIObservabilityConfiguration: Sendable {
         appUserEmail:String? = nil,
         logintype:String? = nil,
         deviceId:String? = nil,
+        includedHosts: Set<String> = [],
+        uploadRequestHeaders: Bool = true,
+        uploadRequestBody: Bool = true,
+        uploadResponseHeaders: Bool = true,
+        uploadResponseBody: Bool = true,
     ) {
         self.enabled = enabled
         self.logRequestHeaders = logRequestHeaders
         self.logRequestBody = logRequestBody
         self.logResponseHeaders = logResponseHeaders
         self.logResponseBody = logResponseBody
-        self.maxBodySize = maxBodySize
+        self.maxBodySize = max(0, maxBodySize)
         self.interval = interval
         self.batchSize = max(1, batchSize)
         self.monitoringURL = monitoringURL
-        self.ignoredHosts = ignoredHosts
-        self.sensitiveHeaders = sensitiveHeaders
-        self.sensitiveBodyKeys = sensitiveBodyKeys
+        self.ignoredHosts = Set(ignoredHosts.map { $0.lowercased() })
+        self.includedHosts = Set(includedHosts.map { $0.lowercased() })
+        self.sensitiveHeaders = Set(sensitiveHeaders.map { $0.lowercased() })
+        self.sensitiveBodyKeys = Set(sensitiveBodyKeys.map { $0.lowercased() })
         self.uploadLogs = uploadLogs
+        self.uploadRequestHeaders = uploadRequestHeaders
+        self.uploadRequestBody = uploadRequestBody
+        self.uploadResponseHeaders = uploadResponseHeaders
+        self.uploadResponseBody = uploadResponseBody
         self.apikey = apikey
         self.appUserId = appUserId
         self.appUserEmail = appUserEmail

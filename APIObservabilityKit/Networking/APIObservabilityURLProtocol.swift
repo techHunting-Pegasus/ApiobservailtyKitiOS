@@ -18,11 +18,19 @@ final class APIObservabilityURLProtocol: URLProtocol, @unchecked Sendable {
 
     private var startDate: Date?
 
+    private var captureConfiguration: APIObservabilityConfiguration?
+
     private var requestId: String =
         UUID().uuidString
 
     private var responseData =
         Data()
+
+    private var responseBodyTruncated = false
+
+    private var requestBodyData: Data?
+    private var requestBodyTruncated = false
+    private var forwardedBodyFileURL: URL?
 
     override class func canInit(
         with request: URLRequest
@@ -44,8 +52,8 @@ final class APIObservabilityURLProtocol: URLProtocol, @unchecked Sendable {
             return false
         }
 
-        return scheme == "http"
-            || scheme == "https"
+        return (scheme == "http" || scheme == "https")
+            && APIObservability.shared.shouldCapture(request)
     }
 
     override class func canonicalRequest(
@@ -57,36 +65,27 @@ final class APIObservabilityURLProtocol: URLProtocol, @unchecked Sendable {
 
     override func startLoading() {
 
-        guard
-            let observabilityConfiguration =
-                APIObservability.shared.configuration,
-            observabilityConfiguration.enabled
-        else {
-            returnOriginalRequest()
-            return
+        if APIObservability.shared.shouldCapture(request) {
+            captureConfiguration = APIObservability.shared.configuration
+            requestId = request.value(forHTTPHeaderField: "X-Request-ID")
+                ?? UUID().uuidString
+            startDate = Date()
         }
 
-        guard
-            let host = request.url?.host,
-            !observabilityConfiguration.ignoredHosts.contains(host)
-        else {
-            returnOriginalRequest()
+        // A full copy preserves POST bodies, body streams, headers and request
+        // policies, including when capture has been disabled since canInit.
+        let mutableRequest = (request as NSURLRequest).mutableCopy() as! NSMutableURLRequest
+
+        do {
+            try prepareRequestBody(mutableRequest)
+        } catch {
+            removeForwardedBodyFile()
+            client?.urlProtocol(self, didFailWithError: error)
             return
         }
-
-        startDate = Date()
-        captureRequest()
-
-        let mutableRequest = NSMutableURLRequest(
-            url: request.url!,
-            cachePolicy: request.cachePolicy,
-            timeoutInterval: request.timeoutInterval
-        )
-
-        // Preserve original request properties
-        mutableRequest.httpMethod = request.httpMethod ?? "GET"
-        mutableRequest.allHTTPHeaderFields = request.allHTTPHeaderFields
-        mutableRequest.httpBody = request.httpBody
+        if captureConfiguration != nil {
+            captureRequest()
+        }
 
         URLProtocol.setProperty(
             true,
@@ -94,7 +93,7 @@ final class APIObservabilityURLProtocol: URLProtocol, @unchecked Sendable {
             in: mutableRequest
         )
 
-        if mutableRequest.value(
+        if captureConfiguration != nil && mutableRequest.value(
             forHTTPHeaderField: "X-Request-ID"
         ) == nil {
 
@@ -131,43 +130,81 @@ final class APIObservabilityURLProtocol: URLProtocol, @unchecked Sendable {
         session?.invalidateAndCancel()
 
         session = nil
+        removeForwardedBodyFile()
     }
 
-    private func returnOriginalRequest() {
+    private func prepareRequestBody(_ forwardedRequest: NSMutableURLRequest) throws {
+        guard let configuration = captureConfiguration,
+              configuration.logRequestBody
+                || (configuration.uploadLogs && configuration.uploadRequestBody) else {
+            return
+        }
+        if let body = request.httpBody {
+            requestBodyTruncated = body.count > configuration.maxBodySize
+            requestBodyData = Data(body.prefix(configuration.maxBodySize))
+            return
+        }
+        guard let stream = request.httpBodyStream else { return }
 
-        let mutableRequest = NSMutableURLRequest(
-            url: request.url!,
-            cachePolicy: request.cachePolicy,
-            timeoutInterval: request.timeoutInterval
+        // URLSession often exposes even a data-backed POST as a body stream.
+        // Spool it to a private file so logging does not consume the payload or
+        // retain an unbounded upload in memory. Forward a fresh stream afterward.
+        let fileURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("api-observability-body-\(UUID().uuidString)")
+        forwardedBodyFileURL = fileURL
+        guard FileManager.default.createFile(
+            atPath: fileURL.path, contents: nil, attributes: [.posixPermissions: 0o600]
+        ), let output = OutputStream(url: fileURL, append: false) else {
+            throw CocoaError(.fileWriteUnknown)
+        }
+        stream.open()
+        output.open()
+        defer {
+            stream.close()
+            output.close()
+        }
+        requestBodyData = Data()
+        var buffer = [UInt8](repeating: 0, count: 16_384)
+        while true {
+            let count = stream.read(&buffer, maxLength: buffer.count)
+            guard count >= 0 else { throw stream.streamError ?? CocoaError(.fileReadUnknown) }
+            if count == 0 { break }
+            let remaining = max(0, configuration.maxBodySize - (requestBodyData?.count ?? 0))
+            requestBodyTruncated = requestBodyTruncated || count > remaining
+            requestBodyData?.append(contentsOf: buffer.prefix(min(count, remaining)))
+            try buffer.withUnsafeBufferPointer { bytes in
+                var written = 0
+                while written < count {
+                    let size = output.write(bytes.baseAddress! + written, maxLength: count - written)
+                    guard size > 0 else { throw output.streamError ?? CocoaError(.fileWriteUnknown) }
+                    written += size
+                }
+            }
+        }
+        forwardedRequest.httpBodyStream = InputStream(url: fileURL)
+    }
+
+    private func removeForwardedBodyFile() {
+        if let fileURL = forwardedBodyFileURL {
+            try? FileManager.default.removeItem(at: fileURL)
+            forwardedBodyFileURL = nil
+        }
+    }
+
+    private func capturedRequestBody(configuration: APIObservabilityConfiguration) -> String? {
+        if requestBodyTruncated { return "[Body omitted: exceeds maxBodySize]" }
+        return APILogSanitizer.sanitizeBody(
+            requestBodyData,
+            sensitiveKeys: configuration.sensitiveBodyKeys,
+            maxSize: configuration.maxBodySize
         )
-
-        URLProtocol.setProperty(
-            true,
-            forKey: Self.handledKey,
-            in: mutableRequest
-        )
-
-        
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.protocolClasses = []
-
-        let session = URLSession(
-            configuration: configuration,
-            delegate: self,
-            delegateQueue: nil
-        )
-
-        self.session = session
-
-        dataTask = session.dataTask(with: mutableRequest as URLRequest)
-        dataTask?.resume()
     }
 
     private func captureRequest() {
 
         guard
             let configuration =
-                APIObservability.shared.configuration
+                captureConfiguration
         else {
             return
         }
@@ -181,16 +218,8 @@ final class APIObservabilityURLProtocol: URLProtocol, @unchecked Sendable {
             )
             : nil
 
-        let body =
-            configuration.logRequestBody
-            ? APILogSanitizer.sanitizeBody(
-                request.httpBody,
-                sensitiveKeys:
-                    configuration.sensitiveBodyKeys,
-                maxSize:
-                    configuration.maxBodySize
-            )
-            : nil
+        let body = configuration.logRequestBody
+            ? capturedRequestBody(configuration: configuration) : nil
 
         print("""
         
@@ -235,32 +264,32 @@ final class APIObservabilityURLProtocol: URLProtocol, @unchecked Sendable {
         let response =
             dataTask?.response as? HTTPURLResponse
 
-        let configuration =
-            APIObservability.shared.configuration
+        guard let configuration = captureConfiguration,
+              APIObservability.shared.configuration?.enabled == true else {
+            return
+        }
 
-        let responseHeaders =
-            configuration?.logResponseHeaders == true
-            ? response?.allHeaderFields.reduce(
-                into: [String: String]()
-            ) {
-                $0[
-                    String(describing: $1.key)
-                ] =
-                    String(describing: $1.value)
-            }
+        let rawResponseHeaders = response?.allHeaderFields.reduce(into: [String: String]()) {
+            $0[String(describing: $1.key)] = String(describing: $1.value)
+        }
+        let responseHeaders = (configuration.logResponseHeaders
+            || (configuration.uploadLogs && configuration.uploadResponseHeaders))
+            ? APILogSanitizer.sanitizeHeaders(
+                rawResponseHeaders,
+                sensitiveKeys: configuration.sensitiveHeaders
+            )
             : nil
 
         let responseBody =
-            configuration?.logResponseBody == true
-            ? APILogSanitizer.sanitizeBody(
+            (configuration.logResponseBody
+                || (configuration.uploadLogs && configuration.uploadResponseBody))
+            ? (responseBodyTruncated ? "[Body omitted: exceeds maxBodySize]" : APILogSanitizer.sanitizeBody(
                 responseData,
                 sensitiveKeys:
-                    configuration?.sensitiveBodyKeys
-                    ?? [],
+                    configuration.sensitiveBodyKeys,
                 maxSize:
-                    configuration?.maxBodySize
-                    ?? 1_000_000
-            )
+                    configuration.maxBodySize
+            ))
             : nil
 
         let durationMs =
@@ -277,35 +306,22 @@ final class APIObservabilityURLProtocol: URLProtocol, @unchecked Sendable {
                     request.httpMethod
                     ?? "UNKNOWN",
                 requestHeaders:
-                    configuration?.logRequestHeaders == true
+                    configuration.uploadRequestHeaders
                     ? APILogSanitizer.sanitizeHeaders(
                         request.allHTTPHeaderFields,
                         sensitiveKeys:
-                            configuration?
+                            configuration
                             .sensitiveHeaders
-                            ?? []
                     )
                     : nil,
-                requestBody:
-                    configuration?.logRequestBody == true
-                    ? APILogSanitizer.sanitizeBody(
-                        request.httpBody,
-                        sensitiveKeys:
-                            configuration?
-                            .sensitiveBodyKeys
-                            ?? [],
-                        maxSize:
-                            configuration?
-                            .maxBodySize
-                            ?? 1_000_000
-                    )
-                    : nil,
+                requestBody: configuration.uploadRequestBody
+                    ? capturedRequestBody(configuration: configuration) : nil,
                 responseStatus:
                     response?.statusCode,
                 responseHeaders:
-                    responseHeaders,
+                    configuration.uploadResponseHeaders ? responseHeaders : nil,
                 responseBody:
-                    responseBody,
+                    configuration.uploadResponseBody ? responseBody : nil,
                 error:
                     error?.localizedDescription,
                 startedAt:
@@ -332,10 +348,10 @@ final class APIObservabilityURLProtocol: URLProtocol, @unchecked Sendable {
                     APIObservabilityDeviceInfo
                     .country,
                 bundleId: APIObservabilityDeviceInfo.bundleId,
-                appUserId: configuration?.appUserId,
-                appUserEmail: configuration?.appUserEmail,
-                logintype: configuration?.logintype,
-                deviceId: configuration?.deviceId
+                appUserId: configuration.appUserId,
+                appUserEmail: configuration.appUserEmail,
+                logintype: configuration.logintype,
+                deviceId: configuration.deviceId
                 
             )
 
@@ -351,14 +367,23 @@ final class APIObservabilityURLProtocol: URLProtocol, @unchecked Sendable {
         Request ID:
         \(requestId)
 
+        Method:
+        \(request.httpMethod ?? "UNKNOWN")
+
+        URL:
+        \(request.url?.absoluteString ?? "")
+
         Status:
         \(response?.statusCode ?? 0)
+
+        Headers:
+        \(configuration.logResponseHeaders ? (responseHeaders ?? [:]) : [:])
 
         Duration:
         \(durationMs) ms
 
         Response:
-        \(responseBody ?? "nil")
+        \(configuration.logResponseBody ? (responseBody ?? "nil") : "nil")
 
         Error:
         \(error?.localizedDescription ?? "nil")
@@ -398,7 +423,13 @@ extension APIObservabilityURLProtocol:
         didReceive data: Data
     ) {
 
-        responseData.append(data)
+        if let configuration = captureConfiguration,
+           configuration.logResponseBody
+            || (configuration.uploadLogs && configuration.uploadResponseBody) {
+            let remaining = max(0, configuration.maxBodySize - responseData.count)
+            responseBodyTruncated = responseBodyTruncated || data.count > remaining
+            responseData.append(data.prefix(remaining))
+        }
 
         client?.urlProtocol(
             self,
@@ -431,8 +462,9 @@ extension APIObservabilityURLProtocol:
             )
         }
 
+        session.finishTasksAndInvalidate()
         self.dataTask = nil
-
         self.session = nil
+        removeForwardedBodyFile()
     }
 }

@@ -44,13 +44,12 @@ enum APILogSanitizer {
             return nil
         }
 
-        let limitedData: Data
-
-        if data.count > maxSize {
-            limitedData = data.prefix(maxSize)
-        } else {
-            limitedData = data
-        }
+        // A truncated JSON prefix cannot be safely redacted. Omit oversized
+        // bodies rather than returning a raw prefix containing credentials.
+        // guard data.count <= max(0, maxSize) else {
+        //     return "[Body omitted: exceeds maxBodySize]"
+        // }
+        let limitedData = data
 
         guard let object =
                 try? JSONSerialization.jsonObject(

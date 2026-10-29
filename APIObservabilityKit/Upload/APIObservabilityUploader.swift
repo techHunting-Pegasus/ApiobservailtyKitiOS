@@ -71,6 +71,9 @@ final class APIObservabilityUploader {
         guard
             !isUploading,
             uploadRequested,
+            let configuration = APIObservability.shared.configuration,
+            configuration.enabled,
+            configuration.uploadLogs,
             let monitoringURL
         else {
             return
@@ -181,7 +184,7 @@ final class APIObservabilityUploader {
         
         session.dataTask(
             with: request
-        ) { [weak self] data, response, error in
+        ) { [weak self] _, response, error in
 
             // MARK: - Network Error
             
@@ -202,20 +205,6 @@ final class APIObservabilityUploader {
                 )
                 self?.finishUpload()
                 return
-            }
-            
-            // MARK: - Response Body
-            
-            if let data {
-                if let responseString = String(
-                    data: data,
-                    encoding: .utf8
-                ) {
-                    print(
-                        "APIObservability Upload Response:",
-                        responseString
-                    )
-                }
             }
             
             // MARK: - Status Code

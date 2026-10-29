@@ -17,6 +17,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "05AE56EB3075196F00FEE6E9"
                BuildableName = "APIObservabilityKit.framework"
+               BlueprintName = "APIObservabilityKit"
                ReferencedContainer = "container:APIObservabilityKit.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -52,6 +53,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "05AE56EB3075196F00FEE6E9"
             BuildableName = "APIObservabilityKit.framework"
+            BlueprintName = "APIObservabilityKit"
             ReferencedContainer = "container:APIObservabilityKit.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

