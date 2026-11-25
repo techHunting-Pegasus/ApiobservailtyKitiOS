@@ -44,6 +44,14 @@ struct observerdemoApp: App {
 //                    ]
                 )
         )
+
+        APIAnalytics.shared.start(
+            configuration: APIAnalyticsConfiguration(
+                apiKey: "obs_e35c2e027aee60948f8bd329613a454479be3c6d86aa3e0c78b4966ed800be7f",
+                debug: true,
+                debugDeviceName: "Demo iPhone"
+            )
+        )
     }
     
     var body: some Scene {

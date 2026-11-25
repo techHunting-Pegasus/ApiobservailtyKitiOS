@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import APIObservabilityKit
 
 struct ContentView: View {
 
@@ -29,6 +30,11 @@ struct ContentView: View {
             .buttonStyle(.borderedProminent)
             .disabled(isLoading)
 
+            Button("Log add_to_cart") {
+                APIAnalytics.shared.logEvent("add_to_cart", parameters: ["sku": "A1", "price": 9.99])
+            }
+            .buttonStyle(.bordered)
+
             ScrollView {
                 Text(result)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -37,6 +43,7 @@ struct ContentView: View {
             .frame(maxHeight: 300)
         }
         .padding()
+        .trackScreen("Home")
     }
 
     private func testAPI() {

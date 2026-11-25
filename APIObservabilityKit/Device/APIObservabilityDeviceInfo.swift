@@ -29,6 +29,22 @@ enum APIObservabilityDeviceInfo {
         UIDevice.current.model
     }
 
+    /// Hardware identifier such as "iPhone15,2" (`deviceModel` only says "iPhone").
+    static var modelIdentifier: String {
+        if let simulatorModel = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] {
+            return simulatorModel
+        }
+        var systemInfo = utsname()
+        uname(&systemInfo)
+        return withUnsafeBytes(of: &systemInfo.machine) { bytes in
+            String(decoding: bytes.prefix { $0 != 0 }, as: UTF8.self)
+        }
+    }
+
+    static var deviceName: String {
+        UIDevice.current.name
+    }
+
     static var timezone: String {
         TimeZone.current.identifier
     }

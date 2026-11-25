@@ -104,6 +104,61 @@ session. Apps with custom authentication delegates or redirect policies need
 separate integration testing. Background sessions are not supported by this
 URLProtocol integration.
 
+## Analytics (Firebase-style events)
+
+`APIAnalytics` is independent of network logging; start either or both.
+
+```swift
+APIAnalytics.shared.start(configuration: .init(
+    apiKey: "YOUR_API_KEY",
+    debug: false,            // true = every event is sent immediately (live debug view)
+    flushInterval: 30,       // seconds between batch uploads
+    batchSize: 20            // upload as soon as this many events are pending
+))
+
+APIAnalytics.shared.logEvent("add_to_cart", parameters: ["sku": "A1", "price": 9.99])
+APIAnalytics.shared.setDebugEnabled(true)   // switch at runtime, e.g. from a debug menu
+APIAnalytics.shared.flush()                 // optional: upload pending events now
+```
+
+Events go to `POST /api/v1/analytics/events` with the `X-API-Key` header.
+
+- **Debug on:** each event is uploaded right away with `debug: true` and a
+  `debugDevice` (stable id plus `debugDeviceName`, or the device name).
+- **Debug off:** events upload when `batchSize` is reached, every `flushInterval`,
+  and when the app goes to the background.
+- Pending events are saved to disk and survive an app kill. Network errors,
+  408, 429 and 5xx are retried on the next flush; other 4xx responses drop the batch.
+- Event and parameter names: letters, digits and `_`, starting with a letter,
+  max 40 characters. Parameter values: `String`, `Int`, `Double`, `Bool`.
+
+Automatic events: `session_start` (launch, and return after `sessionTimeout`,
+default 30 min, in the background) and `screen_view`.
+
+### Screen tracking
+
+UIKit view controllers are tracked automatically (`autoTrackScreens: true`).
+Containers, Apple-internal controllers and generic `UIHostingController`s are
+skipped. To rename a screen, or return `nil` to skip it:
+
+```swift
+extension CheckoutViewController: AnalyticsScreenNaming {
+    var analyticsScreenName: String? { "Checkout" }
+}
+```
+
+SwiftUI has no public screen lifecycle, so it cannot be tracked automatically
+(Firebase has the same limit). Add one line to each screen:
+
+```swift
+var body: some View {
+    List { ... }
+        .trackScreen("Home")
+}
+```
+
+The same screen reported twice within one second is logged once.
+
 ## Run networking regression tests
 
 ```sh
